@@ -1,0 +1,44 @@
+name: Set up Docker in WSL
+description: Set up Docker in WSL with Skrog
+author: gh-workflow
+
+branding:
+  icon: box
+  color: blue
+
+inputs:
+  skrog-version:
+    description: Skrog release version to install.
+    required: false
+    # renovate: datasource=github-releases depName=wslkit/skrog versioning=semver
+    default: "0.10.0"
+  verify-docker:
+    description: Verify the WSL Docker engine.
+    required: false
+    default: "true"
+  verify-docker-in-containers:
+    description: Verify Docker access from containers through Skrog's named-pipe socket.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Skrog
+      uses: wslkit/setup-skrog@cd2cba80924975b0c77217947c228da8aac17b1f # v2.0.0
+      with:
+        version: ${{ inputs.skrog-version }}
+
+    - name: Install and configure Skrog Docker CLI
+      shell: powershell
+      run: '& "$env:GITHUB_ACTION_PATH/scripts/install-and-configure-docker-cli.ps1"'
+
+    - name: Validate Windows Docker CLI
+      if: inputs.verify-docker == 'true'
+      shell: powershell
+      run: '& "$env:GITHUB_ACTION_PATH/scripts/verify-docker.ps1"'
+
+    - name: Validate Docker access from containers
+      if: inputs.verify-docker-in-containers == 'true'
+      shell: powershell
+      run: '& "$env:GITHUB_ACTION_PATH/scripts/verify-docker-in-container.ps1"'
