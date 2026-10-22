@@ -1,0 +1,18 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "ignorePaths": ["**/.git/**"],
+  "words": [
+    "LASTEXITCODE",
+    "Skrog",
+    "Skrog's",
+    "ZIZMOR",
+    "aicage",
+    "buildx",
+    "npipe",
+    "pipefail",
+    "skrog",
+    "wslkit",
+    "zizmor"
+  ]
+}
