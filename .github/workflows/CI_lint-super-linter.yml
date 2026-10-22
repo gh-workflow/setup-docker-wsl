@@ -1,0 +1,32 @@
+name: "CI: lint (super-linter)"
+
+"on":
+  workflow_call:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Run linters
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Super-Linter
+        uses: super-linter/super-linter@2da136927bd4a73596db63044b504547c62cb854 # v9.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          MULTI_STATUS: false
+          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_YAML: true

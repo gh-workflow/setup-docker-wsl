@@ -1,0 +1,20 @@
+{
+  "id": 25611249,
+  "name": "Commits must be signed",
+  "target": "branch",
+  "source_type": "Repository",
+  "source": "gh-workflow/setup-docker-wsl",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "exclude": [],
+      "include": ["~ALL"]
+    }
+  },
+  "rules": [
+    {
+      "type": "required_signatures"
+    }
+  ],
+  "bypass_actors": []
+}
