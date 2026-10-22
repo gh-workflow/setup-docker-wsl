@@ -24,14 +24,12 @@ Run the action before Docker commands:
   run: docker run --rm example
 ```
 
-This action requires a Windows runner with WSL2 available. GitHub-hosted `windows-2025` provides that environment.
-
 ## Inputs
 
 <!-- markdownlint-disable MD013 -->
-| Name                          | Required | Default  | Description                                                                    |
-|-------------------------------|----------|----------|--------------------------------------------------------------------------------|
-| `skrog-version`               | No       | `0.10.0` | Skrog release version to install.                                              |
-| `verify-docker`               | No       | `true`   | Verify the Linux Docker engine, Buildx, registry access, and a read-only mount. |
-| `verify-docker-in-containers` | No       | `false`  | Verify Docker access from a container through Skrog's named-pipe socket.       |
+| Name                          | Required | Default  | Description                            |
+|-------------------------------|----------|----------|----------------------------------------|
+| `skrog-version`               | No       | `0.10.0` | Skrog release version to install.      |
+| `verify-docker`               | No       | `true`   | Verify Docker.                         |
+| `verify-docker-in-containers` | No       | `false`  | Verify Docker access from a container. |
 <!-- markdownlint-enable MD013 -->
