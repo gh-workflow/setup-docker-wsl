@@ -1,0 +1,125 @@
+name: "CI: Dependency bot release trigger"
+
+"on":
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      target_sha:
+        description: Merged Dependabot or Renovate commit to tag and release
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-bot-release-trigger
+  cancel-in-progress: false
+
+jobs:
+  tag-and-trigger-release:
+    name: Create tag and trigger release for dependency bot merge
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Verify commit came from merged dependency bot pull request
+        id: pr
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ inputs.target_sha || github.sha }}
+        run: |
+          set -euo pipefail
+          pulls_json="$(
+            gh api \
+              -H "Accept: application/vnd.github+json" \
+              "repos/${GITHUB_REPOSITORY}/commits/${TARGET_SHA}/pulls"
+          )"
+
+          pr_json="$(
+            jq -c --arg default_branch "$DEFAULT_BRANCH" '
+              [
+                .[]
+                | select(
+                    .merged_at != null
+                    and (
+                      (.user.login == "dependabot[bot]" and .user.id == 49699333)
+                      or
+                      (.user.login == "renovate[bot]" and .user.id == 29139614)
+                    )
+                    and .base.ref == $default_branch
+                  )
+              ][0] // empty
+            ' <<< "$pulls_json"
+          )"
+
+          if [[ -z "$pr_json" ]]; then
+            echo "No merged Dependabot or Renovate pull request found for ${TARGET_SHA}."
+            echo "create_tag=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "create_tag=true" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        if: steps.pr.outputs.create_tag == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve next version tag
+        id: tag
+        if: steps.pr.outputs.create_tag == 'true'
+        run: |
+          set -euo pipefail
+          latest_tag="$(
+            git ls-remote --tags --refs origin 'v*.*.*' \
+              | awk '{print $2}' \
+              | sed 's#refs/tags/##' \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' \
+              | sort -V \
+              | tail -n 1 || true
+          )"
+
+          if [[ -z "$latest_tag" ]]; then
+            version_tag="v0.0.1"
+          else
+            version="${latest_tag#v}"
+            IFS=. read -r major minor patch <<< "$version"
+            version_tag="v${major}.${minor}.$((patch + 1))"
+          fi
+
+          {
+            echo "version_tag=${version_tag}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create version tag
+        if: steps.pr.outputs.create_tag == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION_TAG: ${{ steps.tag.outputs.version_tag }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          gh api \
+            --method POST \
+            "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f ref="refs/tags/${VERSION_TAG}" \
+            -f sha="${TARGET_SHA}"
+
+      - name: Run release workflow for tag
+        if: steps.pr.outputs.create_tag == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION_TAG: ${{ steps.tag.outputs.version_tag }}
+        run: |
+          set -euo pipefail
+          gh workflow run ci_release.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$VERSION_TAG"

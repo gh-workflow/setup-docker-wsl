@@ -1,0 +1,25 @@
+name: "CI: live test"
+
+"on":
+  workflow_call:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-action-test:
+    name: Run live action test
+    runs-on: windows-latest
+    steps:
+      - name: Placeholder
+        shell: powershell
+        run: Write-Host 'Live action tests will be added in a later change.'
