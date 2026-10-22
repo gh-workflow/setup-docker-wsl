@@ -20,6 +20,55 @@ jobs:
     name: Run live action test
     runs-on: windows-latest
     steps:
-      - name: Placeholder
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Docker in WSL
+        uses: ./
+        with:
+          verify-docker-in-containers: "true"
+
+      - name: Verify Docker in a later PowerShell step
         shell: powershell
-        run: Write-Host 'Live action tests will be added in a later change.'
+        run: |
+          $dockerContext = docker context show
+          if ($dockerContext -ne "skrog") {
+            throw "Expected Docker context 'skrog', got: $dockerContext"
+          }
+
+          $dockerOsType = docker info --format '{{.OSType}}'
+          if ($dockerOsType -ne "linux") {
+            throw "Expected a Linux Docker engine, got: $dockerOsType"
+          }
+
+      - name: Verify writable host bind mount
+        shell: powershell
+        run: |
+          $mountDirectory = Join-Path $env:RUNNER_TEMP "setup-docker-wsl-bind-mount"
+          $mountedFile = Join-Path $mountDirectory "container-written.txt"
+          New-Item -ItemType Directory -Force -Path $mountDirectory | Out-Null
+
+          docker run --rm `
+            --mount "type=bind,src=$mountDirectory,dst=/host" `
+            alpine:3.22 touch /host/container-written.txt
+          if ($LASTEXITCODE -ne 0) {
+            throw "Container failed to write to the host bind mount."
+          }
+
+          if (-not (Test-Path -LiteralPath $mountedFile)) {
+            throw "Container did not write the expected file to the host bind mount."
+          }
+
+      - name: Collect Docker diagnostics
+        if: always()
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Continue"
+          Write-Host "Skrog status (JSON):"
+          skrog status --json
+          Write-Host "Docker context 'skrog':"
+          docker context inspect skrog
+          Write-Host "Docker daemon information:"
+          docker info
