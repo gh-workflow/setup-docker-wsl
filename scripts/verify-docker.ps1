@@ -4,13 +4,13 @@ $ErrorActionPreference = "Stop"
 # Confirm that Skrog, rather than another runner-installed Docker context, is active.
 $dockerContext = docker context show
 if ($dockerContext -ne "skrog") {
-  throw "Expected Docker context 'skrog'."
+    throw "Expected Docker context 'skrog'."
 }
 
 # Verify the expected Linux daemon, bundled CLI plugins, registry access, and bind mounting.
 $dockerOsType = docker info --format '{{.OSType}}'
 if ($dockerOsType -ne "linux") {
-  throw "Expected a Linux Docker engine."
+    throw "Expected a Linux Docker engine."
 }
 
 docker buildx version

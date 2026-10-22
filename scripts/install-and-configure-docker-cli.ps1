@@ -8,12 +8,12 @@ skrog cli install --no-path
 $cliStatus = skrog cli status --json
 $cliBinDir = ($cliStatus | ConvertFrom-Json).binDir
 if (-not $cliBinDir -or -not (Test-Path -LiteralPath $cliBinDir)) {
-  throw "Skrog Docker CLI bin directory was not found: $cliBinDir"
+    throw "Skrog Docker CLI bin directory was not found: $cliBinDir"
 }
 
 $dockerConfig = Join-Path $env:USERPROFILE ".docker"
 if (-not (Test-Path -LiteralPath $dockerConfig)) {
-  throw "Skrog Docker config directory was not found: $dockerConfig"
+    throw "Skrog Docker config directory was not found: $dockerConfig"
 }
 
 # These files affect later composite-action and workflow steps. GITHUB_PATH is prepended by the runner.

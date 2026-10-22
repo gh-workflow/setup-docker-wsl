@@ -25,7 +25,7 @@ runs:
   using: composite
   steps:
     - name: Set up Skrog
-      uses: wslkit/setup-skrog@cd2cba80924975b0c77217947c228da8aac17b1f  # v2.0.0
+      uses: wslkit/setup-skrog@cd2cba80924975b0c77217947c228da8aac17b1f # v2.0.0
       with:
         version: ${{ inputs.skrog-version }}
 
