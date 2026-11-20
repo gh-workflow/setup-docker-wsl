@@ -18,7 +18,7 @@ concurrency:
 jobs:
   lint:
     name: Run super-linter
-    uses: ./.github/workflows/CI_lint-super-linter.yml
+    uses: ./.github/workflows/ci_lint-super-linter.yml
     permissions:
       contents: read
       issues: write
