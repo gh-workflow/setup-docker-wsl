@@ -1,4 +1,4 @@
-# Set up Docker in WSL
+# Set up Docker in WSL on Windows
 
 [![GitHub Marketplace](https://img.shields.io/badge/marketplace-setup--docker--wsl-blue?logo=github&labelColor=333&style=flat-square)](https://github.com/marketplace/actions/set-up-docker-in-wsl)
 [![Release](https://img.shields.io/github/v/release/gh-workflow/setup-docker-wsl?style=flat-square)](https://github.com/gh-workflow/setup-docker-wsl/releases)
@@ -14,7 +14,7 @@ Run `docker` in later workflow steps. The Docker engine runs in WSL.
 Run the action before Docker commands:
 
 ```yaml
-- name: Set up Docker in WSL
+- name: Set up Docker in WSL on Windows
   uses: gh-workflow/setup-docker-wsl@v1
 
 - name: Build image
