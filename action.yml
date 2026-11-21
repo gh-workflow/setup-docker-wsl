@@ -1,4 +1,4 @@
-name: Set up Docker in WSL
+name: Set up Docker in WSL on Windows
 description: Set up Docker in WSL on Windows with Skrog
 author: gh-workflow
 

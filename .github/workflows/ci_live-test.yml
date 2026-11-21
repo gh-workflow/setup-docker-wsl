@@ -33,7 +33,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Docker in WSL
+      - name: Set up Docker in WSL on Windows
         uses: ./
         with:
           verify-docker-in-containers: "true"
